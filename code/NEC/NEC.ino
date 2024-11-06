@@ -24,6 +24,7 @@ Ein Bit ist folgend aufgebaut:
 const int SendPin = 22;
 
  void startBit(void){
+ 
   digitalWrite(SendPin,HIGH);
   delay(9);
   digitalWrite(SendPin,LOW);
@@ -31,6 +32,7 @@ const int SendPin = 22;
  }
 
  void send1(void){
+ 
   digitalWrite(SendPin,HIGH);
   delay(0.5625);
   digitalWrite(SendPin,LOW);
@@ -38,6 +40,7 @@ const int SendPin = 22;
  }
 
   void send0(void){
+  
   digitalWrite(SendPin,HIGH);
   delay(0.5625);
   digitalWrite(SendPin,LOW);
@@ -53,7 +56,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
- startBit();
- send1();
- send0();
+    digitalWrite(SendPin,HIGH);
+    delay(1000);
+    digitalWrite(SendPin,LOW);
+    delay(1000);
+ //startBit();
+//send1();
+ //send0();
 }

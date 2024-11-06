@@ -23,6 +23,8 @@
 
 void setup() {
     pinMode(22, OUTPUT);
+    pinMode(25, INPUT);
+    pinMode(32, INPUT);
 
     Serial.begin(115200);
     while (!Serial)
@@ -33,6 +35,8 @@ void setup() {
      */
     IrSender.begin(22); // Start with IR_SEND_PIN -which is defined in PinDefinitionsAndMore.h- as send pin and enable feedback LED at default feedback LED pin
     disableLEDFeedback(); // Disable feedback LED at default feedback LED pin
+
+    IrSender.sendNECRaw(0x46228248, 00); // inverted on
 }
 
 /*
@@ -43,27 +47,37 @@ void setup() {
  */
 uint8_t sCommand = 0x34;
 uint8_t sRepeats = 0;
+bool onFlag = false;
+bool offFlag = false;
 
 void loop() {
-    /*
-     * Print current send values
-     */
-    Serial.println();
-    Serial.print(F("Send now: address=0x00, command=0x"));
-    Serial.print(sCommand, HEX);
-    Serial.print(F(", repeats="));
-    Serial.print(sRepeats);
-    Serial.println();
-
-    Serial.println(F("Send standard NEC with 8 bit address"));
-    Serial.flush();
 
     /*
      * If you want to send a raw HEX value directly like e.g. 0xCB340102 you must use sendNECRaw()
      */
-    Serial.println(F("Send 32 bit LSB 0x12411562 with NECRaw()"));
-//    IrSender.sendNECRaw(0x12411562, sRepeats); // original
-    IrSender.sendNECRaw(0x46A88248, sRepeats); // inverted
+    
+     Serial.println("Loop started");
+    if (digitalRead(25) == HIGH && onFlag == false){
+      Serial.println("Set off at 25");
+      onFlag = true;
+      offFlag = false;
+      IrSender.sendNECRaw(0x46A88248, sRepeats); // inverted on
+    }else if(digitalRead(25) == LOW){
+      onFlag = false;
+    }
+
+    if (digitalRead(32) == HIGH && offFlag == false){
+      Serial.println("Set on at 32");
+      offFlag = true;
+      onFlag = false;
+      IrSender.sendNECRaw(0x46228248, sRepeats); // inverted off
+    }else if(digitalRead(32) == LOW){
+      offFlag = false;
+    }
+    
+//    IrSender.sendNECRaw(0x12411562, sRepeats); // original on
+//    IrSender.sendNECRaw(0x46A88248, sRepeats); // inverted on
+//    IrSender.sendNECRaw(0x46228248, sRepeats); // inverted off
 
     /*
      * If you want to send an "old" MSB HEX value used by IRremote versions before 3.0 like e.g. 0x40802CD3 you must use sendNECMSB()
