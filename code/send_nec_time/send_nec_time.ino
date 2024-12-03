@@ -5,15 +5,15 @@
 int compileHour, compileMinute, compileSecond, compileYear, compileDay;
 char compileMonth[4];
 
-int sendHour = 11;
-int sendMinute = 44;
-int sendSecond = 0;
+int sendHour = 13;
+int sendMinute = 15;
+int sendSecond = 30;
 
 void setup() {
   // set output pin
   pinMode(22, OUTPUT);
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial)
     ; // Wait for Serial to become available. Is optimized away for some cores.
 
