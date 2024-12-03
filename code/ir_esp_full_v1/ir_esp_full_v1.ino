@@ -47,11 +47,11 @@ void loop() {
   Serial.println("Time: " + String(hour()) + ":" + String(minute()) + ":" + String(second()));
   Serial.println("get next cmd");
   struct NextCommand next = getNextCmd();
-  Serial.println("final next command: " + String(next.day) + ", " + String(next.hour) + ":" + String(next.minute));
+  //Serial.println("final next command: " + String(next.day) + ", " + String(next.hour) + ":" + String(next.minute));
   //if(weekday() == next.day && hour() == next.hour && minute() == next.minute){
   //  Serial.println("send nec command");
   //}
-  delay(5000);
+  delay(15000);
 }
 
 /*
@@ -71,52 +71,66 @@ NextCommand getNextCommandStruct(const CommandParam& paramCmd) {
   // get current weekday
   int today = weekday() - 1;
   Serial.println("today:" + String(today));
-  int day = today;
+  int searchDay = today;
   while (1) {
     // check if command should be sent today with current weekday as index for weekdays array
-    Serial.println("day: " + String(day));
-    if (paramCmd.weekdays[day] == 1) {
+    Serial.println("day: " + String(searchDay));
+    if (paramCmd.weekdays[searchDay] == 1) {
       Serial.println("weekday found");
-      Serial.println(day);
+      Serial.println(searchDay);
       Serial.println(today);
-      if (day == today) {
+      Serial.println(searchDay == today);
+      if (searchDay == today) {
         // check if current time is later than next command time
-        String currentTime = String(hour()) + String(minute());
+        String currentTime = String(hour());
+        if (minute() < 10) {
+          currentTime += "0" + String(minute());
+        }else {
+          currentTime += String(minute());
+        }
         int currentTimeInt = currentTime.toInt();
-        String cmdTime = String(paramCmd.time[0]) + String(paramCmd.time[1]);
+        String cmdTime = String(paramCmd.time[0]);
+        if (paramCmd.time[1] < 10) {
+          cmdTime += "0" + String(paramCmd.time[1]);
+        }else {
+          cmdTime += String(paramCmd.time[1]);
+        }
         int cmdTimeInt = cmdTime.toInt();
         Serial.println("command time: " + String(cmdTimeInt));
         Serial.println("current time: " + String(currentTime));
         if (cmdTimeInt > currentTimeInt) {
           break;
         }
-      } else {
+      }else{
         break;
       }
-      break;
     }
     // no command should be sent today, check for the next days
-    day += 1;
-    if (day > 6) {
-      day = 0;
+    searchDay += 1;
+    if (searchDay > 6) {
+      searchDay = 0;
     }
     // break when current weekday is reached again (no days found)
-    if (day == today) {
+    if (searchDay == today) {
       Serial.println("no day found");
-      break;
+      nextCmd.day = 1000000;
+      nextCmd.hour = 1000000;
+      nextCmd.minute = 1000000;
+      return nextCmd;
     }
   }
-  if (day != today) {
-    nextCmd.day = day;
-    nextCmd.hour = paramOn.time[0];
-    nextCmd.minute = paramOn.time[1];
-  }
+  Serial.println("next command found");
+  nextCmd.day = searchDay;
+  nextCmd.hour = paramOn.time[0];
+  nextCmd.minute = paramOn.time[1];
+  return nextCmd;
 }
 
 bool isEarlier(const NextCommand& a, const NextCommand& b) {
   if (a.day != b.day) {
     return a.day < b.day;
-  } if (a.hour != b.hour) {
+  }
+  if (a.hour != b.hour) {
     return a.hour < b.hour;
   }
   return a.minute < b.minute;
@@ -134,7 +148,7 @@ NextCommand getEarliest(const NextCommand& t1, const NextCommand& t2, const Next
 }
 
 NextCommand getNextCmd(void) {
-  Serial.println("start get next cmd");
+  Serial.println("start getting next cmd");
   struct NextCommand nextOnCmd = getNextCommandStruct(paramOn);
   struct NextCommand nextOffCmd = getNextCommandStruct(paramOff);
   struct NextCommand nextPlaceholderCmd = getNextCommandStruct(paramPlaceholder);
