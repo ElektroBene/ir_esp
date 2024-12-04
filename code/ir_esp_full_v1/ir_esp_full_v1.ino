@@ -1,9 +1,26 @@
 #include <Arduino.h>
 #include <IRremote.hpp> // include the library
 #include <TimeLib.h>
+#include <WiFi.h>
+#include <ESPAsyncWebSrv.h>
+#include <SPIFFS.h>
+
+const char* ssid = "iPhone von Benedikt (2)"; // CHANGE IT
+const char* password = "bene12345"; // CHANGE IT
+
+/*
+const char* ssid = "WG-LAN";
+const char* password = "FredTheFridge!RIP";
+*/
+
+
 
 int compileHour, compileMinute, compileSecond, compileYear, compileDay;
 char compileMonth[4];
+
+bool newCommand = false;
+
+unsigned int previousMillis = 0;
 
 struct CommandParam {
   int time[2];
@@ -11,23 +28,143 @@ struct CommandParam {
 };
 
 struct NextCommand {
+  uint32_t command;
   int day;
   int hour;
   int minute;
 };
 
-struct CommandParam paramOn = {{10, 30}, {0, 0, 1, 0, 1, 0, 0}};
-struct CommandParam paramOff = {{16, 30}, {0, 0, 1, 0, 1, 0, 0}};
+struct CommandParam paramOn = {{10, 30}, {0, 0, 1, 1, 1, 0, 0}};
+struct CommandParam paramOff = {{16, 30}, {0, 0, 1, 1, 1, 0, 0}};
 struct CommandParam paramPlaceholder = {{0, 0}, {0, 0, 0, 0, 0, 0, 0}};
+
+void setupNetwork(void) {
+  // WiFi.scanNetworks will return the number of networks found.
+  int n = WiFi.scanNetworks();
+  Serial.println("Scan done");
+  if (n == 0) {
+      Serial.println("no networks found");
+  } else {
+      Serial.print(n);
+      Serial.println(" networks found");
+      Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
+      for (int i = 0; i < n; ++i) {
+          // Print SSID and RSSI for each network found
+          Serial.printf("%2d",i + 1);
+          Serial.print(" | ");
+          Serial.printf("%-32.32s", WiFi.SSID(i).c_str());
+          Serial.print(" | ");
+          Serial.printf("%4d", WiFi.RSSI(i));
+          Serial.print(" | ");
+          Serial.printf("%2d", WiFi.channel(i));
+          Serial.print(" | ");
+          switch (WiFi.encryptionType(i))
+          {
+          case WIFI_AUTH_OPEN:
+              Serial.print("open");
+              break;
+          case WIFI_AUTH_WEP:
+              Serial.print("WEP");
+              break;
+          case WIFI_AUTH_WPA_PSK:
+              Serial.print("WPA");
+              break;
+          case WIFI_AUTH_WPA2_PSK:
+              Serial.print("WPA2");
+              break;
+          case WIFI_AUTH_WPA_WPA2_PSK:
+              Serial.print("WPA+WPA2");
+              break;
+          case WIFI_AUTH_WPA2_ENTERPRISE:
+              Serial.print("WPA2-EAP");
+              break;
+          case WIFI_AUTH_WPA3_PSK:
+              Serial.print("WPA3");
+              break;
+          case WIFI_AUTH_WPA2_WPA3_PSK:
+              Serial.print("WPA2+WPA3");
+              break;
+          case WIFI_AUTH_WAPI_PSK:
+              Serial.print("WAPI");
+              break;
+          default:
+              Serial.print("unknown");
+          }
+          Serial.println();
+          delay(10);
+      }
+  }
+  Serial.println("");
+
+  // Delete the scan result to free memory for code below.
+  WiFi.scanDelete();
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+
+  // Print the ESP32's IP address
+  Serial.print("ESP32 Web Server's IP address: ");
+  Serial.println(WiFi.localIP());
+}
 
 void setup() {
   Serial.begin(9600);
   while (!Serial)
     ; // Wait for Serial to become available. Is optimized away for some cores.
 
+  // setup ir library
+  pinMode(22, OUTPUT);
+  IrSender.begin(22);
+  
+  // setup time library
   sscanf(__TIME__, "%d:%d:%d", &compileHour, &compileMinute, &compileSecond);
   sscanf(__DATE__, "%s %d %d", &compileMonth, &compileDay, &compileYear);
   setTime(compileHour, compileMinute, compileSecond, compileDay, monthToInt(compileMonth), compileYear);
+
+  // setup wlan connection
+  setupNetwork();
+
+  // initialize SPIFFS
+  if(!SPIFFS.begin(true)){
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+  // define routes to serve html page and get parameters
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+    Serial.println("ESP32 Web Server: New request received:");  // for debugging
+    Serial.println("GET /");        // for debugging
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+  server.on("/setOn", HTTP_GET, [](AsyncWebServerRequest *request){
+    paramOn.time = request->getParam("time")->value();
+    paramOn.weekdays = request->getParam("week")->value();
+    newCommand = true;
+    Serial.print("on request set: " + paramOn.time + ", " + paramOn.weekdays);
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+  server.on("/setOff", HTTP_GET, [](AsyncWebServerRequest *request){
+    paramOff.time = request->getParam("time")->value();
+    paramOff.weekdays = request->getParam("week")->value();
+    newCommand = true;
+    Serial.print("off request set: " + paramOff.time + ", " + paramOff.weekdays);
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+  server.on("/setPlaceholder", HTTP_GET, [](AsyncWebServerRequest *request){
+    paramPlaceholder.time = request->getParam("time")->value();
+    paramPlaceholder.weekdays = request->getParam("week")->value();
+    newCommand = true;
+    Serial.print("placeholder request set: " + paramPlaceholder.time + ", " + paramPlaceholder.weekdays);
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+
+  // Start the server
+  server.begin();
 }
 
 int monthToInt(const char* month) {
@@ -43,43 +180,53 @@ int monthToInt(const char* month) {
 }
 
 void loop() {
-  Serial.println("Weekday: " + String(weekday()));
-  Serial.println("Time: " + String(hour()) + ":" + String(minute()) + ":" + String(second()));
-  Serial.println("get next cmd");
+  // get next command
   struct NextCommand next = getNextCmd();
-  //Serial.println("final next command: " + String(next.day) + ", " + String(next.hour) + ":" + String(next.minute));
-  //if(weekday() == next.day && hour() == next.hour && minute() == next.minute){
-  //  Serial.println("send nec command");
-  //}
-  delay(15000);
-}
+  newCommand = false;
 
-/*
-  bool isZero(int days[7]) {
-  for (int i = 0; i < 7; i++) {
-    if (days[i] != 0) {
-      return false; // Wenn ein Eintrag nicht 0 ist, gibt false zurück
+  // get waiting time
+  unsigned long waitInterval = getWaitingTime(next);
+  Serial.println("wait for " + String(waitInterval));
+  
+  // wait
+  previousMillis = millis();
+  unsigned long currentMillis = millis();
+  while(true) {
+    // check if new parameters are received
+    if (newCommand) {
+      break;
+    }
+    // check if waiting time is reached
+    currentMillis = millis();
+    float currentWaitTimeTmp = (currentMillis - previousMillis)/1000;
+    Serial.println("waited for " + String(currentWaitTimeTmp));
+    if (currentMillis - previousMillis >= waitInterval) {
+      sendNec(next);
+      break;
     }
   }
-  return true; // Wenn alle Einträge 0 sind, gibt true zurück
-  }
-*/
+
+  Serial.println("finished sending command");
+  delay(19000);
+}
+
+void sendNec(void) {
+  Serial.println("send nec command");
+  IrSender.sendNECRaw(0x46228248, sRepeats);
+  delay(1000);
+  IrSender.sendNECRaw(0x46228248, sRepeats);
+  delay(1000);
+  IrSender.sendNECRaw(0x46228248, sRepeats);
+}
 
 NextCommand getNextCommandStruct(const CommandParam& paramCmd) {
-  Serial.println("start searching for next command");
   struct NextCommand nextCmd = {-1, -1, -1};
   // get current weekday
   int today = weekday() - 1;
-  Serial.println("today:" + String(today));
   int searchDay = today;
   while (1) {
     // check if command should be sent today with current weekday as index for weekdays array
-    Serial.println("day: " + String(searchDay));
     if (paramCmd.weekdays[searchDay] == 1) {
-      Serial.println("weekday found");
-      Serial.println(searchDay);
-      Serial.println(today);
-      Serial.println(searchDay == today);
       if (searchDay == today) {
         // check if current time is later than next command time
         String currentTime = String(hour());
@@ -96,8 +243,6 @@ NextCommand getNextCommandStruct(const CommandParam& paramCmd) {
           cmdTime += String(paramCmd.time[1]);
         }
         int cmdTimeInt = cmdTime.toInt();
-        Serial.println("command time: " + String(cmdTimeInt));
-        Serial.println("current time: " + String(currentTime));
         if (cmdTimeInt > currentTimeInt) {
           break;
         }
@@ -112,14 +257,12 @@ NextCommand getNextCommandStruct(const CommandParam& paramCmd) {
     }
     // break when current weekday is reached again (no days found)
     if (searchDay == today) {
-      Serial.println("no day found");
       nextCmd.day = 1000000;
       nextCmd.hour = 1000000;
       nextCmd.minute = 1000000;
       return nextCmd;
     }
   }
-  Serial.println("next command found");
   nextCmd.day = searchDay;
   nextCmd.hour = paramOn.time[0];
   nextCmd.minute = paramOn.time[1];
@@ -150,14 +293,18 @@ NextCommand getEarliest(const NextCommand& t1, const NextCommand& t2, const Next
 NextCommand getNextCmd(void) {
   Serial.println("start getting next cmd");
   struct NextCommand nextOnCmd = getNextCommandStruct(paramOn);
+  nextOnCmd.command = 0x46A88248;
   struct NextCommand nextOffCmd = getNextCommandStruct(paramOff);
+  nextOffCmd.command = 0x46228248;
   struct NextCommand nextPlaceholderCmd = getNextCommandStruct(paramPlaceholder);
+  nextPlaceholderCmd.command = 0x00000000;
 
   struct NextCommand earliest = getEarliest(nextOnCmd, nextOffCmd, nextPlaceholderCmd);
-
-  Serial.println("next on command: " + String(nextOnCmd.day) + ", " + String(nextOnCmd.hour) + ":" + String(nextOnCmd.minute));
-  Serial.println("next off command: " + String(nextOffCmd.day) + ", " + String(nextOffCmd.hour) + ":" + String(nextOffCmd.minute));
-  Serial.println("next 3rd command: " + String(nextPlaceholderCmd.day) + ", " + String(nextPlaceholderCmd.hour) + ":" + String(nextPlaceholderCmd.minute));
-  Serial.println("earliest command: " + String(earliest.day) + ", " + String(earliest.hour) + ":" + String(earliest.minute));
+  Serial.println("next command: " + + String(earliest.command) + " @ " + String(earliest.day) + ", " + String(earliest.hour) + ":" + String(earliest.minute));
   return earliest;
+}
+
+unsigned long getWaitingTime(const NextCommand& next) {
+  unsigned long time = 10000;
+  return time;
 }
