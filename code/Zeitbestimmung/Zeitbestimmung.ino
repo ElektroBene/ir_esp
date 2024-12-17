@@ -140,7 +140,7 @@ struct zuWartendeZeit WaitingTime;
 
 */
 
-struct NextCommand NB = {3, 9, 30};
+struct NextCommand NB = {3, 13, 26};
 
 // mit 4 13:25
 // kommt raus 0 2 59
