@@ -54,7 +54,9 @@ struct CurrentTime {
   int hour;
   int minute;
   int second;
-}
+};
+
+struct CurrentTime currentTime;
 
 void stringToIntArray(const String str, int* intArr) {
   for (int i = 0; i < 7; i++) {
@@ -136,8 +138,20 @@ void setup() {
     Serial.println();
     // current time: 'Tue Dec 17 2024 15:01:22 GMT+0100 (Mitteleuropäische Normalzeit)'
     String today = request->getParam("currentTime")->value();
-    
-    
+    int todaySize = today.length();
+    Serial.println("length: " + todaySize);
+    char todayChr[todaySize];
+    for(int i = 0; i < today.length(); i++) {
+      todayChr[i] = today[i];
+    }
+    Serial.println(String(todayChr));
+    const char* todayPtr = todayChr;
+    Serial.println("today: " + today);
+    sscanf(todayPtr, "%*s %3s %d %d %d:%d:%d %*s", currentTime.month, currentTime.day, currentTime.year, currentTime.hour, currentTime.minute, currentTime.second);
+    Serial.println("test");
+    Serial.println(currentTime.hour);
+    Serial.println("today: " + String(currentTime.hour) + ":" + String(currentTime.minute) + ":" + String(currentTime.second));
+    setTime(currentTime.hour, currentTime.minute, currentTime.second, currentTime.day, monthToInt(currentTime.month), currentTime.year);
     // html
     request->send(SPIFFS, "/index.html", "text/html");
 

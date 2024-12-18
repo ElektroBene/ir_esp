@@ -54,7 +54,7 @@ struct CurrentTime {
   int hour;
   int minute;
   int second;
-}
+};
 
 void stringToIntArray(const String str, int* intArr) {
   for (int i = 0; i < 7; i++) {
