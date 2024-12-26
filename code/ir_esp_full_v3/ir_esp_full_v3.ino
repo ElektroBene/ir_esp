@@ -7,8 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <iostream>
+#include <string>
 
-const char* ssid = "ESP32-Access-Point"; // CHANGE IT
+const char* ssid = "ESP32-Klimasteuerung"; // CHANGE IT
 const char* password = "1234567890"; // CHANGE IT
 
 AsyncWebServer server(80);
@@ -48,12 +50,12 @@ typedef struct zuWartendeZeit
 struct zuWartendeZeit WaitingTime;
 
 struct CurrentTime {
-  int day;
-  char month[4]; // Platz für den Monatsnamen in drei Buchstaben + Nullterminator
-  int year;
-  int hour;
-  int minute;
-  int second;
+  int days;
+  char months[4]; // Platz für den Monatsnamen in drei Buchstaben + Nullterminator
+  int years;
+  int hours;
+  int minutes;
+  int seconds;
 };
 
 struct CurrentTime currentTime;
@@ -69,6 +71,18 @@ void stringToIntArray(const String str, int* intArr) {
       intArr[i] = -1;
     }
   }
+}
+
+int monthToInt(const char* month) {
+  // Array der Monatsnamen
+  const char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  // Durchlaufen des Arrays und Vergleich der Monatsnamen
+  for (int i = 0; i < 12; ++i) {
+    if (strncmp(month, months[i], 3) == 0) {
+      return i + 1; // Monat gefunden, Index zurückgeben
+    }
+  } // Falls der Monat nicht gefunden wird, -1 zurückgeben
+  return -1;
 }
 
 void setup() {
@@ -136,22 +150,13 @@ void setup() {
       Serial.print(paramOn.weekdays[i]);
     }
     Serial.println();
-    // current time: 'Tue Dec 17 2024 15:01:22 GMT+0100 (Mitteleuropäische Normalzeit)'
-    String today = request->getParam("currentTime")->value();
-    int todaySize = today.length();
-    Serial.println("length: " + todaySize);
-    char todayChr[todaySize];
-    for(int i = 0; i < today.length(); i++) {
-      todayChr[i] = today[i];
-    }
-    Serial.println(String(todayChr));
-    const char* todayPtr = todayChr;
-    Serial.println("today: " + today);
-    sscanf(todayPtr, "%*s %3s %d %d %d:%d:%d %*s", currentTime.month, currentTime.day, currentTime.year, currentTime.hour, currentTime.minute, currentTime.second);
-    Serial.println("test");
-    Serial.println(currentTime.hour);
-    Serial.println("today: " + String(currentTime.hour) + ":" + String(currentTime.minute) + ":" + String(currentTime.second));
-    setTime(currentTime.hour, currentTime.minute, currentTime.second, currentTime.day, monthToInt(currentTime.month), currentTime.year);
+    // current time
+    String currTime = request->getParam("currentTime")->value();
+    const char* currTimeStr = currTime.c_str();
+    sscanf(currTimeStr, "%*s %3s %d %d %d:%d:%d %*s", &currentTime.months, &currentTime.days, &currentTime.years, &currentTime.hours, &currentTime.minutes, &currentTime.seconds);
+    Serial.println("set time to: " + String(currentTime.hours) + ":" + String(currentTime.minutes) + ":" + String(currentTime.seconds));
+    setTime(currentTime.hours, currentTime.minutes, currentTime.seconds, currentTime.days, monthToInt(currentTime.months), currentTime.years);
+    
     // html
     request->send(SPIFFS, "/index.html", "text/html");
 
@@ -159,9 +164,11 @@ void setup() {
   });
   server.on("/setOff", HTTP_GET, [](AsyncWebServerRequest * request) {
     Serial.print("off request set: " + String(request->getParam("time")->value()) + ", " + String(request->getParam("time")->value()));
+    // time
     String t = request->getParam("time")->value();
     paramOff.hours = t.substring(0, 2).toInt();
     paramOff.minutes = t.substring(3, 5).toInt();
+    // weekdays
     String days = request->getParam("week")->value();
     stringToIntArray(days, paramOff.weekdays);
     Serial.println("time: " + String(paramOff.hours) + ":" + String(paramOff.minutes));
@@ -170,6 +177,13 @@ void setup() {
       Serial.print(paramOff.weekdays[i]);
     }
     Serial.println();
+    // current time
+    String currTime = request->getParam("currentTime")->value();
+    const char* currTimeStr = currTime.c_str();
+    sscanf(currTimeStr, "%*s %3s %d %d %d:%d:%d %*s", &currentTime.months, &currentTime.days, &currentTime.years, &currentTime.hours, &currentTime.minutes, &currentTime.seconds);
+    Serial.println("set time to: " + String(currentTime.hours) + ":" + String(currentTime.minutes) + ":" + String(currentTime.seconds));
+    setTime(currentTime.hours, currentTime.minutes, currentTime.seconds, currentTime.days, monthToInt(currentTime.months), currentTime.years);
+    
     request->send(SPIFFS, "/index.html", "text/html");
 
     newCommand = true;
@@ -188,24 +202,16 @@ void setup() {
     }
     Serial.println();
     request->send(SPIFFS, "/index.html", "text/html");
+    // current time
+    String currTime = request->getParam("currentTime")->value();
+    const char* currTimeStr = currTime.c_str();
+    sscanf(currTimeStr, "%*s %3s %d %d %d:%d:%d %*s", &currentTime.months, &currentTime.days, &currentTime.years, &currentTime.hours, &currentTime.minutes, &currentTime.seconds);
+    Serial.println("set time to: " + String(currentTime.hours) + ":" + String(currentTime.minutes) + ":" + String(currentTime.seconds));
+    setTime(currentTime.hours, currentTime.minutes, currentTime.seconds, currentTime.days, monthToInt(currentTime.months), currentTime.years);
     
     newCommand = true;
   });
   server.begin();
-}
-
-
-
-int monthToInt(const char* month) {
-  // Array der Monatsnamen
-  const char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-  // Durchlaufen des Arrays und Vergleich der Monatsnamen
-  for (int i = 0; i < 12; ++i) {
-    if (strncmp(month, months[i], 3) == 0) {
-      return i + 1; // Monat gefunden, Index zurückgeben
-    }
-  } // Falls der Monat nicht gefunden wird, -1 zurückgeben
-  return -1;
 }
 
 void loop() {
@@ -338,7 +344,8 @@ bool isEarlier(const NextCommand& a, const NextCommand& b) {
   return a.minute < b.minute;
 }
 
-NextCommand getEarliest(const NextCommand& t1, const NextCommand& t2, const NextCommand& t3) {
+NextCommand getEarliest(NextCommand t1, NextCommand t2, NextCommand t3) {
+  transformCommandTimes(t1, t2, t3);
   NextCommand earliest = t1;
   if (isEarlier(t2, earliest)) {
     earliest = t2;
@@ -346,7 +353,48 @@ NextCommand getEarliest(const NextCommand& t1, const NextCommand& t2, const Next
   if (isEarlier(t3, earliest)) {
     earliest = t3;
   }
+  transformTimesBack(earliest);
   return earliest;
+}
+
+void transformCommandTimes(NextCommand &t1, NextCommand &t2, NextCommand &t3) {
+  int weekdays = weekday();
+  int hours = hour();
+  int minutes = minute();
+  transformTimes(t1, weekdays, hours, minutes);
+  transformTimes(t2, weekdays, hours, minutes);
+  transformTimes(t3, weekdays, hours, minutes);
+}
+
+void transformTimes(NextCommand &t, const int weekdays, const int hours, const int minutes) {
+  // subtract current date/time to find difference
+  t.day -= weekdays;
+  if(t.day < 0) {
+    t.day += 7;
+  }
+  t.hour -= hours;
+  if(t.hour < 0) {
+    t.hour += 24;
+  }
+  t.minute -= minutes;
+  if(t.minute < 0) {
+    t.minute += 60;
+  }
+}
+
+void transformTimesBack(NextCommand &t) {
+  t.day += weekday();
+  if (t.day > 6) {
+    t.day -= 7;
+  }
+  t.hour += hour();
+  if (t.hour > 23) {
+    t.hour -= 24;
+  }
+  t.minute += minute();
+  if (t.minute > 59) {
+    t.minute -= 60;
+  }
 }
 
 NextCommand getNextCmd(void) {
