@@ -10,8 +10,12 @@
 #include <iostream>
 #include <string>
 
-const char* ssid = "ESP32-Klimasteuerung"; // CHANGE IT
-const char* password = "1234567890"; // CHANGE IT
+const char* ssid = "ESP32-Klimasteuerung";
+const char* password = "1234567890";
+
+const uint32_t onCommand = 0x46A88248;
+const uint32_t offCommand = 0x46228248;
+const uint32_t thirdCommand = 0x00000000;
 
 AsyncWebServer server(80);
 
@@ -35,8 +39,8 @@ struct NextCommand {
   int minute;
 };
 
-struct CommandParam paramOn = {11, 53, {0, 0, 1, 1, 1, 0, 0}};
-struct CommandParam paramOff = {22, 30, {0, 0, 1, 1, 1, 0, 0}};
+struct CommandParam paramOn = {10, 0, {0, 0, 1, 1, 1, 0, 0}};
+struct CommandParam paramOff = {16, 0, {0, 0, 1, 1, 1, 0, 0}};
 struct CommandParam paramPlaceholder = {0, 0, {0, 0, 0, 0, 0, 0, 0}};
 
 typedef struct zuWartendeZeit
@@ -254,6 +258,9 @@ void loop() {
   }else{
     while(true) {
       //Serial.println("current time: " + String(hour()) + ":" + String(minute()) + ":" + String(second()));
+      if (newCommand) {
+        break;
+      }
        if(hour() == next.hour && minute() == next.minute && second() >= 0) {
         sendNec(next);
         break;
@@ -400,15 +407,15 @@ void transformTimesBack(NextCommand &t) {
 NextCommand getNextCmd(void) {
   Serial.println("start getting next cmd");
   struct NextCommand nextOnCmd = getNextCommandStruct(paramOn);
-  nextOnCmd.command = 0x46A88248;
+  nextOnCmd.command = onCommand;
   Serial.println("next on cmd: " + String(nextOnCmd.day) + ", " + String(nextOnCmd.hour) + ":" + String(nextOnCmd.minute));
   Serial.println("-----");
   Serial.println("paramOff: " + String(paramOff.hours) + ":" + String(paramOff.minutes));
   struct NextCommand nextOffCmd = getNextCommandStruct(paramOff);
-  nextOffCmd.command = 0x46228248;
+  nextOffCmd.command = offCommand;
   Serial.println("next off cmd: " + String(nextOffCmd.day) + ", " + String(nextOffCmd.hour) + ":" + String(nextOffCmd.minute));
   struct NextCommand nextPlaceholderCmd = getNextCommandStruct(paramPlaceholder);
-  nextPlaceholderCmd.command = 0x00000000;
+  nextPlaceholderCmd.command = thirdCommand;
   Serial.println("next 3rd cmd: " + String(nextPlaceholderCmd.day) + ", " + String(nextPlaceholderCmd.hour) + ":" + String(nextPlaceholderCmd.minute));
 
   struct NextCommand earliest = getEarliest(nextOnCmd, nextOffCmd, nextPlaceholderCmd);

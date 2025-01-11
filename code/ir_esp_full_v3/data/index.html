@@ -1,219 +1,230 @@
-
 <!DOCTYPE html>
 <html>
-    <head>
-      
-    </head>
-    <body>
-        <title>Steuerung der Klimaanlage</title>
-        <style type="text/css">
-           section {
-               float : left;
-               width : 30%; 
-           }
-        
-           section2 {
-               float : left;
-               width : 30%;
-           }
-        
-           section3 {
-               float : left;
-               width : 30%;
-           }
-        
-           section4 {
-               float : upper;
-               height : 50%; 
-           }
-        </style>
-            <h3> Steuerung der Klimaanlage</h3>
-            <section>
-                <p><b> Drücken, zum Senden der Anschaltzeiten </b></p>
-                <p><button id="ButtonKlimaAn" style="width:120px;height:50px;left:NaNpx;top:NaNpx;" onclick = onclickKlimaAn()><b>Klima An</b></button></p>
-            </section>
-            <section>
-              <p> <label for="InputZeitKlimaAn"><b>Zeiten zum aktivieren der Anlage</b></label> </p>
-               <p> <input type="time" id="InputZeitKlimaAn" name="TimeAcOn" required style="width:120px;height:50px;"> </p>
-        
-            </section>
-            <section>
-                <fieldset>
-                    <legend>Tag zum Anschalten der Anlage</legend>
-                    <span><div>
-                        <input type="checkbox" id="Monday" Name="Mo" onclick="Monday()"><label for="Monday">Montag</label>
-                    </div>            <div>
-                        <input type="checkbox" id="Tuesday" Name="Tue"><label for="Tuesday">Dienstag</label>
-                    </div></span>
-                    <div>
-                        <input type="checkbox" id="Wednesday" Name="Wed"><label for="Wednesday">Mittwoch</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Thursday" Name="Th"><label for="Thursday">Donnerstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Friday" Name="Fri"><label for="Friday">Freitag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Saturday" Name="Sat"><label for="Saturday">Samstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Sunday" Name="Sun"><label for="Sunday">Sonntag</label>
-                    </div>
-                </fieldset>
-            </section>
-            <section2>
-                <p><b>Drücken, zum Senden der Ausschaltzeiten</b></p>
-                <p><button id="ButtonKlimaAus" style="width:120px;height:50px;left:NaNpx;top:NaNpx;" onclick = onclickKlimaAus()><b> Klima Aus </b></button></p>
-            </section2>
-            <section2>
-                <p><label for="InputZeitKlimaAus"><b>Zeiten zum ausschalten der Anlage</b></label><!-- Untereinander--></p>
-                   <p><input type="time" id="InputZeitKlimaAus" name="TimeAcOn" required style="width:120px;height:50px;"> </p>
-            </section2>
-            <section2>
-                <fieldset>
-                    <legend>Tage für Klimaanlage aus</legend>
-                    <span><div>
-                        <input type="checkbox" id="MondayOff" Name="Mo"><label for="MondayOff">Montag</label>
-                    </div>            <div>
-                        <input type="checkbox" id="TuesdayOff" Name="Tue"><label for="TuesdayOff">Dienstag</label>
-                    </div></span>
-        <div>
-                        <input type="checkbox" id="WednesdayOff" Name="Wed"><label for="WednesdayOff">Mittwoch</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="ThursdayOff" Name="Th"><label for="ThursdayOff">Donnerstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="FridayOff" Name="Fri"><label for="FridayOff">Freitag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="SaturdayOff" Name="Sat"><label for="SaturdayOff">Samstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="SundayOff" Name="Sun"><label for="SundayOff">Sonntag</label>
-                    </div>
-                </fieldset>
-            </section2>
-            <section3>
-                <p> <b> Drücke, zum Senden der "Funktion 3-Zeiten"</b> </p>
-                <p><button id="Funktion3" style="width:120px;height:50px;left:NaNpx;top:NaNpx;" onclick = onclickKlima3()><b>Funktion 3</b></button></p>
-        
-            </section3>
-            <section3>
-               <p> <label for="InputZeitKlimaAn"> <b>Zeiten für  Funktion 3 </b></label> </p>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Steuerung der Klimaanlage</title>
+
+</head>
+
+<body>
+    <title>Steuerung der Klimaanlage</title>
+    <style type="text/css">
+        section {
+            float: left;
+            width: 30%;
+        }
+
+        section2 {
+            float: left;
+            width: 30%;
+        }
+
+        section3 {
+            float: left;
+            width: 30%;
+        }
+
+        section4 {
+            float: upper;
+            height: 50%;
+        }
+    </style>
+    <h3> Steuerung der Klimaanlage</h3>
+    <section>
+        <p><b> Drücken, zum Senden der Anschaltzeiten </b></p>
+        <p><button id="ButtonKlimaAn" style="width:120px;height:50px;left:NaNpx;top:NaNpx;"
+                onclick=onclickKlimaAn()><b>Klima An</b></button></p>
+    </section>
+    <section>
+        <p> <label for="InputZeitKlimaAn"><b>Zeiten zum aktivieren der Anlage</b></label> </p>
+        <p> <input type="time" id="InputZeitKlimaAn" name="TimeAcOn" required style="width:120px;height:50px;"> </p>
+
+    </section>
+    <section>
+        <fieldset>
+            <legend>Tag zum Anschalten der Anlage</legend>
+            <span>
+                <div>
+                    <input type="checkbox" id="Monday" Name="Mo" onclick="Monday()"><label for="Monday">Montag</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="Tuesday" Name="Tue"><label for="Tuesday">Dienstag</label>
+                </div>
+            </span>
+            <div>
+                <input type="checkbox" id="Wednesday" Name="Wed"><label for="Wednesday">Mittwoch</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Thursday" Name="Th"><label for="Thursday">Donnerstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Friday" Name="Fri"><label for="Friday">Freitag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Saturday" Name="Sat"><label for="Saturday">Samstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Sunday" Name="Sun"><label for="Sunday">Sonntag</label>
+            </div>
+        </fieldset>
+    </section>
+    <section2>
+        <p><b>Drücken, zum Senden der Ausschaltzeiten</b></p>
+        <p><button id="ButtonKlimaAus" style="width:120px;height:50px;left:NaNpx;top:NaNpx;"
+                onclick=onclickKlimaAus()><b> Klima Aus </b></button></p>
+    </section2>
+    <section2>
+        <p><label for="InputZeitKlimaAus"><b>Zeiten zum ausschalten der Anlage</b></label><!-- Untereinander--></p>
+        <p><input type="time" id="InputZeitKlimaAus" name="TimeAcOn" required style="width:120px;height:50px;"> </p>
+    </section2>
+    <section2>
+        <fieldset>
+            <legend>Tage für Klimaanlage aus</legend>
+            <span>
+                <div>
+                    <input type="checkbox" id="MondayOff" Name="Mo"><label for="MondayOff">Montag</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="TuesdayOff" Name="Tue"><label for="TuesdayOff">Dienstag</label>
+                </div>
+            </span>
+            <div>
+                <input type="checkbox" id="WednesdayOff" Name="Wed"><label for="WednesdayOff">Mittwoch</label>
+            </div>
+            <div>
+                <input type="checkbox" id="ThursdayOff" Name="Th"><label for="ThursdayOff">Donnerstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="FridayOff" Name="Fri"><label for="FridayOff">Freitag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="SaturdayOff" Name="Sat"><label for="SaturdayOff">Samstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="SundayOff" Name="Sun"><label for="SundayOff">Sonntag</label>
+            </div>
+        </fieldset>
+    </section2>
+    <section3>
+        <p> <b> Drücke, zum Senden der "Funktion 3-Zeiten"</b> </p>
+        <p><button id="Funktion3" style="width:120px;height:50px;left:NaNpx;top:NaNpx;"
+                onclick=onclickKlima3()><b>Funktion 3</b></button></p>
+
+    </section3>
+    <section3>
+        <p> <label for="InputZeitKlimaAn"> <b>Zeiten für Funktion 3 </b></label> </p>
         <!-- Untereinander-->
-         <p><input type="time" id="InputZeitFunktion3" name="Time3" required style="width:120px;height:50px;"></p>
-            </section3>
-            <section3>
-                <fieldset>
-                    <legend>Tage für Funktion3</legend>
-                    <span><div>
-                        <input type="checkbox" id="Monday3" Name="Mo" onclick="Monday()"><label for="Monday3">Montag</label>
-                    </div>            <div>
-                        <input type="checkbox" id="Tuesday3" Name="Tue"><label for="Tuesday3">Dienstag</label>
-                    </div></span>
-                    <div>
-                        <input type="checkbox" id="Wednesday3" Name="Wed"><label for="Wednesday3">Mittwoch</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Thursday3" Name="Th"><label for="Thursday3">Donnerstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Friday3" Name="Fri"><label for="Friday3">Freitag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Saturday3" Name="Sat"><label for="Saturday3">Samstag</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="Sunday3" Name="Sun"><label for="Sunday3">Sonntag</label>
-                    </div>
-                </fieldset>
-            </section3>
-        </body>
-        
-        
-        <script>
+        <p><input type="time" id="InputZeitFunktion3" name="Time3" required style="width:120px;height:50px;"></p>
+    </section3>
+    <section3>
+        <fieldset>
+            <legend>Tage für Funktion3</legend>
+            <span>
+                <div>
+                    <input type="checkbox" id="Monday3" Name="Mo" onclick="Monday()"><label for="Monday3">Montag</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="Tuesday3" Name="Tue"><label for="Tuesday3">Dienstag</label>
+                </div>
+            </span>
+            <div>
+                <input type="checkbox" id="Wednesday3" Name="Wed"><label for="Wednesday3">Mittwoch</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Thursday3" Name="Th"><label for="Thursday3">Donnerstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Friday3" Name="Fri"><label for="Friday3">Freitag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Saturday3" Name="Sat"><label for="Saturday3">Samstag</label>
+            </div>
+            <div>
+                <input type="checkbox" id="Sunday3" Name="Sun"><label for="Sunday3">Sonntag</label>
+            </div>
+        </fieldset>
+    </section3>
+</body>
 
-          function changingBoolToBit(IdElement){
-                return document.getElementById(IdElement).checked ? 1 : 0;
-            }
 
-          function onclickKlimaAn(){
+<script>
 
-            var xhttp = new XMLHttpRequest();
-            var today = new Date();
-            var data = "/setOn?";
+    function changingBoolToBit(IdElement) {
+        return document.getElementById(IdElement).checked ? 1 : 0;
+    }
 
+    function onclickKlimaAn() {
 
-            var InputTimeOn = document.getElementById("InputZeitKlimaAn").value;
-            
-            data += "time=" + InputTimeOn;
+        var xhttp = new XMLHttpRequest();
+        var today = new Date();
+        var data = "/setOn?";
 
-            data += "&week="+ changingBoolToBit("Sunday") + changingBoolToBit("Monday") + changingBoolToBit("Tuesday") + 
-            changingBoolToBit("Wednesday") + changingBoolToBit("Thursday")+ changingBoolToBit("Friday")
-            + changingBoolToBit("Saturday") ;
 
-            data +="&currentTime=" + today;
+        var InputTimeOn = document.getElementById("InputZeitKlimaAn").value;
 
-            xhttp.open("GET", data);
-            xhttp.send();   
+        data += "time=" + InputTimeOn;
 
-            console.log(today);
+        data += "&week=" + changingBoolToBit("Sunday") + changingBoolToBit("Monday") + changingBoolToBit("Tuesday") +
+            changingBoolToBit("Wednesday") + changingBoolToBit("Thursday") + changingBoolToBit("Friday")
+            + changingBoolToBit("Saturday");
 
-          }
+        data += "&currentTime=" + today;
 
- 
+        xhttp.open("GET", data);
+        xhttp.send();
 
+        console.log(today);
 
+    }
 
 
-function onclickKlimaAus(){
 
-var xhttp = new XMLHttpRequest();
-var data = "/setOff?";
-var today = new Date();
 
-var InputTimeAus = document.getElementById("InputZeitKlimaAus").value;
 
-data += "time=" + InputTimeAus;
 
-data += "&week="+ changingBoolToBit("SundayOff") + changingBoolToBit("MondayOff") + changingBoolToBit("TuesdayOff") + 
-changingBoolToBit("WednesdayOff") + changingBoolToBit("ThursdayOff")+ changingBoolToBit("FridayOff")
-+ changingBoolToBit("SaturdayOff");
+    function onclickKlimaAus() {
 
-data +="&currentTime=" + today;
+        var xhttp = new XMLHttpRequest();
+        var data = "/setOff?";
+        var today = new Date();
 
-xhttp.open("GET", data);
-xhttp.send();   
+        var InputTimeAus = document.getElementById("InputZeitKlimaAus").value;
 
-console.log(today);
-}
+        data += "time=" + InputTimeAus;
 
-function onclickKlima3(){
+        data += "&week=" + changingBoolToBit("SundayOff") + changingBoolToBit("MondayOff") + changingBoolToBit("TuesdayOff") +
+            changingBoolToBit("WednesdayOff") + changingBoolToBit("ThursdayOff") + changingBoolToBit("FridayOff")
+            + changingBoolToBit("SaturdayOff");
 
-var xhttp = new XMLHttpRequest();
-var data = "/setPlaceholder?";
-var today = new Date();
+        data += "&currentTime=" + today;
 
-var InputZeitFunktion3 = document.getElementById("InputZeitFunktion3").value;
+        xhttp.open("GET", data);
+        xhttp.send();
 
-data += "time=" + InputZeitFunktion3;
+        console.log(today);
+    }
 
-data += "&week=" + changingBoolToBit("Sunday3") + changingBoolToBit("Monday3") + changingBoolToBit("Tuesday3") + 
-changingBoolToBit("Wednesday3") + changingBoolToBit("Thursday3")+ changingBoolToBit("Friday3")
-+ changingBoolToBit("Saturday3") ;
-data += "&currentTime=" + today;
+    function onclickKlima3() {
 
-xhttp.open("GET", data);
-xhttp.send(); 
-console.log(today);  
+        var xhttp = new XMLHttpRequest();
+        var data = "/setPlaceholder?";
+        var today = new Date();
 
-}
+        var InputZeitFunktion3 = document.getElementById("InputZeitFunktion3").value;
 
+        data += "time=" + InputZeitFunktion3;
 
+        data += "&week=" + changingBoolToBit("Sunday3") + changingBoolToBit("Monday3") + changingBoolToBit("Tuesday3") +
+            changingBoolToBit("Wednesday3") + changingBoolToBit("Thursday3") + changingBoolToBit("Friday3")
+            + changingBoolToBit("Saturday3");
+        data += "&currentTime=" + today;
 
+        xhttp.open("GET", data);
+        xhttp.send();
+        console.log(today);
 
+    }
 
 
 
@@ -234,71 +245,76 @@ console.log(today);
 
 
 
-            function Monday(){
-                console.log("Monday was clicked!!!!");
-                var InputTimeOff = document.getElementById("InputTimeAcOff");
-                console.log(InputTimeOff.value);
 
-            }
 
-            function MondayOff(){
-                console.log("MondayOff clicked")
-            }
- 
-            function submit(){
-                console.log("submission!!!");
-                // implement function to send the
-                // selected input to the microontroller ???
 
-                // collect the input from checkboxes
-                //
 
-                // collect the input from time
-                //  https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/time
+    function Monday() {
+        console.log("Monday was clicked!!!!");
+        var InputTimeOff = document.getElementById("InputTimeAcOff");
+        console.log(InputTimeOff.value);
 
+    }
 
+    function MondayOff() {
+        console.log("MondayOff clicked")
+    }
 
-                var InputTimeOff = document.getElementById("InputTimeAcOff");
-                console.log(InputTimeOff.value);
+    function submit() {
+        console.log("submission!!!");
+        // implement function to send the
+        // selected input to the microontroller ???
 
+        // collect the input from checkboxes
+        //
 
+        // collect the input from time
+        //  https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/time
 
-                var InputTimeOn = document.getElementById("InputTimeAcOn");
-                console.log(InputTimeOn.value);
 
 
-                // reading the value off the checkboxes
-                //https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox
+        var InputTimeOff = document.getElementById("InputTimeAcOff");
+        console.log(InputTimeOff.value);
 
-                // funktioniert nicht
-                var MondayCheckBox = document.getElementById("Monday").checked;
-                console.log(MondayCheckBox);
-                //
-                var TuesdayCheckBox = document.getElementById("Tuesday").checked;
-                console.log(TuesdayCheckBox);
 
-                // Algo noch implementieren, wann welche Box gechecked wurde weiter senden
 
-                // Und Noch Error behandlung einbauen, wenn Tage nicht belegt wurden oder außerhalb der Labor 
-                // Zeiten ... 
+        var InputTimeOn = document.getElementById("InputTimeAcOn");
+        console.log(InputTimeOn.value);
 
-                //Error bahandlung, damit etwas eingegeben wurde 
-                // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#additional_features
-                // Error ausgabe wenn nichts eingeben wird oder zu großer bzw. kleiner wert
-                if(InputTimeOn.validity.valueMissing){
-                    console.log("not input");
-                    //InputTimeOn.validity.setCustomValidity("Input is required");
-                    // erkennt funktion setCustommValidity nicht
-                }
-                else if (InputTimeOn.validity.rangeUnderflow){
 
-                }
-                else if (InputTimeOn.validity.rangeOverflow){
+        // reading the value off the checkboxes
+        //https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox
 
-                }
-               
-            }
+        // funktioniert nicht
+        var MondayCheckBox = document.getElementById("Monday").checked;
+        console.log(MondayCheckBox);
+        //
+        var TuesdayCheckBox = document.getElementById("Tuesday").checked;
+        console.log(TuesdayCheckBox);
 
-        </script>
-    </body>
+        // Algo noch implementieren, wann welche Box gechecked wurde weiter senden
+
+        // Und Noch Error behandlung einbauen, wenn Tage nicht belegt wurden oder außerhalb der Labor 
+        // Zeiten ... 
+
+        //Error bahandlung, damit etwas eingegeben wurde 
+        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#additional_features
+        // Error ausgabe wenn nichts eingeben wird oder zu großer bzw. kleiner wert
+        if (InputTimeOn.validity.valueMissing) {
+            console.log("not input");
+            //InputTimeOn.validity.setCustomValidity("Input is required");
+            // erkennt funktion setCustommValidity nicht
+        }
+        else if (InputTimeOn.validity.rangeUnderflow) {
+
+        }
+        else if (InputTimeOn.validity.rangeOverflow) {
+
+        }
+
+    }
+
+</script>
+</body>
+
 </html>

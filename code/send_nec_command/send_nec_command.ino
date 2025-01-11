@@ -26,7 +26,7 @@ void setup() {
     pinMode(25, INPUT);
     pinMode(32, INPUT);
 
-    Serial.begin(115200);
+    Serial.begin(9600);
     while (!Serial)
         ; // Wait for Serial to become available. Is optimized away for some cores.
 
