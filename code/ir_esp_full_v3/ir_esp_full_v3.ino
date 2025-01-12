@@ -39,8 +39,8 @@ struct NextCommand {
   int minute;
 };
 
-struct CommandParam paramOn = {10, 0, {0, 0, 1, 1, 1, 0, 0}};
-struct CommandParam paramOff = {16, 0, {0, 0, 1, 1, 1, 0, 0}};
+struct CommandParam paramOn = {10, 0, {0, 1, 1, 1, 1, 0, 0}};
+struct CommandParam paramOff = {16, 0, {0, 1, 1, 1, 1, 0, 0}};
 struct CommandParam paramPlaceholder = {0, 0, {0, 0, 0, 0, 0, 0, 0}};
 
 typedef struct zuWartendeZeit
@@ -158,6 +158,15 @@ void setup() {
     String currTime = request->getParam("currentTime")->value();
     const char* currTimeStr = currTime.c_str();
     sscanf(currTimeStr, "%*s %3s %d %d %d:%d:%d %*s", &currentTime.months, &currentTime.days, &currentTime.years, &currentTime.hours, &currentTime.minutes, &currentTime.seconds);
+    currentTime.seconds += 1;
+    if(currentTime.seconds >= 60) {
+      currentTime.seconds -= 60;
+      currentTime.minutes += 1;
+    }
+    if(currentTime.minutes >= 60) {
+      currentTime.minutes -= 60;
+      currentTime.hours += 1;
+    }
     Serial.println("set time to: " + String(currentTime.hours) + ":" + String(currentTime.minutes) + ":" + String(currentTime.seconds));
     setTime(currentTime.hours, currentTime.minutes, currentTime.seconds, currentTime.days, monthToInt(currentTime.months), currentTime.years);
     
@@ -290,6 +299,7 @@ NextCommand getNextCommandStruct(const CommandParam paramCmd) {
   // get current weekday
   int today = weekday() - 1;
   int searchDay = today;
+  bool dayFound = false;
   while (1) {
     // check if command should be sent today with current weekday as index for weekdays array
     if (paramCmd.weekdays[searchDay] == 1) {
@@ -312,12 +322,16 @@ NextCommand getNextCommandStruct(const CommandParam paramCmd) {
           cmdTime += String(paramCmd.minutes);
         }
         int cmdTimeInt = cmdTime.toInt();
+        Serial.println("command time: " + String(cmdTimeInt));
+        Serial.println("current time: " + String(currentTimeInt));
         if (cmdTimeInt > currentTimeInt) {
           Serial.println("send time is later today");
+          dayFound = true;
           break;
         }
       } else {
         Serial.println("send next command at some point");
+        dayFound = true;
         break;
       }
     }
@@ -352,16 +366,29 @@ bool isEarlier(const NextCommand& a, const NextCommand& b) {
 }
 
 NextCommand getEarliest(NextCommand t1, NextCommand t2, NextCommand t3) {
+  NextCommand t1_backup = t1;
+  NextCommand t2_backup = t2;
+  NextCommand t3_backup = t3;
   transformCommandTimes(t1, t2, t3);
+  int cmd_indicator = 1;
   NextCommand earliest = t1;
   if (isEarlier(t2, earliest)) {
     earliest = t2;
+    cmd_indicator = 2;
   }
   if (isEarlier(t3, earliest)) {
     earliest = t3;
+    cmd_indicator = 3;
   }
-  transformTimesBack(earliest);
-  return earliest;
+  //transformTimesBack(earliest);
+  if(cmd_indicator == 1) {
+    return t1_backup;
+  }else if(cmd_indicator == 2){
+    return t2_backup;
+  }else{
+    return t3_backup;
+  }
+  //return earliest;
 }
 
 void transformCommandTimes(NextCommand &t1, NextCommand &t2, NextCommand &t3) {
@@ -369,8 +396,11 @@ void transformCommandTimes(NextCommand &t1, NextCommand &t2, NextCommand &t3) {
   int hours = hour();
   int minutes = minute();
   transformTimes(t1, weekdays, hours, minutes);
+  Serial.println("transformed t1: " + String(t1.day) + ", " + String(t1.hour) + ":" + String(t1.minute));
   transformTimes(t2, weekdays, hours, minutes);
+  Serial.println("transformed t2: " + String(t2.day) + ", " + String(t2.hour) + ":" + String(t2.minute));
   transformTimes(t3, weekdays, hours, minutes);
+  Serial.println("transformed t3: " + String(t3.day) + ", " + String(t3.hour) + ":" + String(t3.minute));
 }
 
 void transformTimes(NextCommand &t, const int weekdays, const int hours, const int minutes) {
@@ -382,25 +412,52 @@ void transformTimes(NextCommand &t, const int weekdays, const int hours, const i
   t.hour -= hours;
   if(t.hour < 0) {
     t.hour += 24;
+    t.day -= 1;
+    if(t.day < 0) {
+      t.day += 7;
+    }
   }
   t.minute -= minutes;
   if(t.minute < 0) {
     t.minute += 60;
+    t.hour -= 1;
+    if(t.hour < 0) {
+      t.hour += 24;
+      t.day -= 1;
+      if(t.day < 0) {
+        t.day += 7;
+      }
+    }
   }
 }
 
 void transformTimesBack(NextCommand &t) {
-  t.day += weekday();
+  int days = weekday();
+  int hours = hour();
+  int minutes = minute();
+  t.day += days;
   if (t.day > 6) {
     t.day -= 7;
   }
-  t.hour += hour();
+  t.hour += hours;
   if (t.hour > 23) {
     t.hour -= 24;
+    //t.day += 1;
+    //  if (t.day > 6) {
+    //  t.day -= 7;
+    //}
   }
-  t.minute += minute();
+  t.minute += minutes;
   if (t.minute > 59) {
     t.minute -= 60;
+    t.hour += hours;
+    if (t.hour > 23) {
+      t.hour -= 24;
+      t.day += 1;
+        if (t.day > 6) {
+        t.day -= 7;
+      }
+    }
   }
 }
 
